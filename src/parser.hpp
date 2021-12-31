@@ -46,7 +46,7 @@ namespace Parser
     }; */
 
     const std::vector<Token> scan(const std::string& input);
-    std::optional<std::string_view> error_check(const std::vector<Token>& tokens);
+    std::optional<std::string> error_check(const std::vector<Token>& tokens);
 
     std::ostream& operator<<(std::ostream& os, const std::vector<Token>& tokens);
 }

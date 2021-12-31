@@ -1,6 +1,7 @@
 #include "parser.hpp"
 
 #include <iostream>
+#include <optional>
 #include <sstream>
 
 using namespace Parser;
@@ -63,8 +64,37 @@ const std::vector<Token> Parser::scan(const std::string& input)
     return resulting_symbols;
 }
 
-std::optional<std::string_view> Parser::error_check(const std::vector<Token>& tokens)
+std::optional<std::string> Parser::error_check(const std::vector<Token>& tokens)
 {
+    uint32_t bracket_count = 0;
+
+    for (size_t i = 0; i < tokens.size(); i++)
+    {
+        const Token& token = tokens[i];
+
+        if (token.Type == TokenType::BRACKET_OPEN || token.Type == TokenType::BRACKET_CLOSE)
+            ++bracket_count;
+        else if (token.Type == TokenType::ERROR)
+            return "Malformed input, expected either a number or mathematical operand, got '" + token.Value + "' instead.";
+        else if (token.Type >= TokenType::PLUS)
+        {
+            if (i == 0)
+                return "Expected value before '" + token.Value + "'";
+            else if (i + 1 == tokens.size())
+                return "Expected value after '" + token.Value + "'";
+
+            const Token& prev_token = tokens[i - 1], next_token = tokens[i + 1];
+
+            if (prev_token.Type != TokenType::NUMBER)
+                return "Expected number on left side of '+', got '" + prev_token.Value + "' instead";
+            else if (next_token.Type != TokenType::NUMBER)
+                return "Expected number on right side of '+', got '" + next_token.Value + "' instead";
+        }
+    }
+
+    if (bracket_count % 2 != 0)
+        return "Unclosed bracket";
+
     return std::nullopt;
 }
 
